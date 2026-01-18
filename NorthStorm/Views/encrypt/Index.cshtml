@@ -1,0 +1,107 @@
+@{
+    ViewData["Title"] = "Add Watermark";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">إضافة العلامة المائية</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h5>الصورة الأصلية</h5>
+                        <img id="originalImage" src="~/images/book.jpg" alt="Original Image" class="img-fluid mb-3" style="max-width: 500px;" />
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <button id="addWatermarkBtn" class="btn btn-primary btn-lg">
+                            <i class="fa fa-plus-circle"></i> إضافة العلامة المائية "bolen,bolen"
+                        </button>
+                    </div>
+
+                    <div id="resultDiv" class="alert" style="display: none;"></div>
+
+                    <div id="binaryInfoDiv" class="alert alert-info" style="display: none;">
+                        <h5>Binary String Information:</h5>
+                        <p><strong>Original Text:</strong> <span id="originalText"></span></p>
+                        <p><strong>Binary Length:</strong> <span id="binaryLength"></span> bits</p>
+                        <p><strong>Binary String:</strong></p>
+                        <pre id="binaryString" style="word-wrap: break-word; white-space: pre-wrap; font-family: monospace; background-color: #f4f4f4; padding: 10px; border-radius: 5px;"></pre>
+                    </div>
+
+                    <div id="watermarkedImageDiv" class="text-center" style="display: none;">
+                        <h5>الصورة مع الخط الثنائي</h5>
+                        <img id="watermarkedImage" src="" alt="Watermarked Image" class="img-fluid" style="max-width: 500px;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#addWatermarkBtn').click(function () {
+                // Show loading state
+                $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> جاري الإضافة...');
+
+                // Make AJAX call to add watermark
+                $.ajax({
+                    url: '@Url.Action("AddWatermark", "encrypt")',
+                    type: 'POST',
+                    success: function (response) {
+                        $('#addWatermarkBtn').prop('disabled', false).html('<i class="fa fa-plus-circle"></i> إضافة العلامة المائية "bolen,bolen"');
+
+                        if (response.success) {
+                            // Show success message
+                            $('#resultDiv')
+                                .removeClass('alert-danger')
+                                .addClass('alert-success')
+                                .html('<i class="fa fa-check-circle"></i> ' + response.message)
+                                .show();
+
+                            // Display binary string information
+                            if (response.binary) {
+                                $('#originalText').text(response.text);
+                                $('#binaryLength').text(response.binaryLength);
+                                $('#binaryString').text(response.binary);
+                                $('#binaryInfoDiv').show();
+
+                                // Also log to browser console
+                                console.log('=======================================');
+                                console.log('Text:', response.text);
+                                console.log('Binary:', response.binary);
+                                console.log('Length:', response.binaryLength, 'bits');
+                                console.log('=======================================');
+                            }
+
+                            // Show the watermarked image with cache busting
+                            var timestamp = new Date().getTime();
+                            $('#watermarkedImage').attr('src', '/images/book_watermarked.jpg?' + timestamp);
+                            $('#watermarkedImageDiv').show();
+                        } else {
+                            // Show error message
+                            $('#resultDiv')
+                                .removeClass('alert-success')
+                                .addClass('alert-danger')
+                                .html('<i class="fa fa-exclamation-circle"></i> ' + response.message)
+                                .show();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('#addWatermarkBtn').prop('disabled', false).html('<i class="fa fa-plus-circle"></i> إضافة العلامة المائية "bolen,bolen"');
+
+                        $('#resultDiv')
+                            .removeClass('alert-success')
+                            .addClass('alert-danger')
+                            .html('<i class="fa fa-exclamation-circle"></i> حدث خطأ أثناء إضافة العلامة المائية')
+                            .show();
+                    }
+                });
+            });
+        });
+    </script>
+}

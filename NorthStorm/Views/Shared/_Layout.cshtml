@@ -22,6 +22,7 @@
                     <img src="~/Images/noc.jpg" class="rounded-circle" width="32" height="32" alt="Avatar" />
                     North Storm
                 </a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -288,7 +289,7 @@
                                     </a>
                                     <ul class="dropdown-menu">
 
-                                        <li><a class="nav-link text-black" asp-area="" asp-controller="Ministries" asp-action="Index">وزارات الدولة</a></li>
+                                        <li><a class="nav-link text-black" asp-area="" asp-controller="fus" asp-action="Index">وزارات الدولة</a></li>
                                         <li><a class="nav-link text-black" asp-area="" asp-controller="StatOffices" asp-action="Index">الدوائر والمؤسسات</a></li>
 
                                         <li><a class="nav-link text-black" asp-area="" asp-controller="Locations" asp-action="Index">الموقع الجغرافي</a></li>
@@ -343,6 +344,8 @@
                                 <li><a class="nav-link text-black" href="#">الشعبة الرياضية</a></li>
                             </ul>
                         </li>
+                        <li><a class="nav-link text-black" asp-area="" asp-controller="encrypt" asp-action="Index">encryptions</a></li>
+                        <li><a class="nav-link text-black" asp-area="" asp-controller="decrypt" asp-action="Index">decryption</a></li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "Automatic Dot Detection Decoder";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fa fa-search"></i> Automatic Dot Detection Decoder</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Image Selection -->
+                    <div class="mb-4">
+                        <h5>Select Encrypted Image:</h5>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="imageInput" accept="image/*">
+                        </div>
+                        <small class="text-muted">Or use default: book_watermarked.jpg</small>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h5>Image to Decrypt</h5>
+                        <img id="targetImage"  alt="Encrypted Image" class="img-fluid mb-3" style="max-width: 600px; border: 2px solid #28a745; border-radius: 5px;" />
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <button id="decodeBtn" class="btn btn-success btn-lg">
+                            <i class="fa fa-unlock-alt"></i> Decode Message (Auto-Detect Dots)
+                        </button>
+                    </div>
+
+                    <div id="resultDiv" class="alert" style="display: none;"></div>
+
+                    <div id="decodeResults" style="display: none;">
+
+                        <!-- Decoded Message -->
+                        <div class="card mb-3 border-success">
+                            <div class="card-header bg-light">
+                                <strong><i class="fa fa-comment"></i> Decoded Message:</strong>
+                            </div>
+                            <div class="card-body text-center">
+                                <h2 class="text-success" id="decodedTextDisplay"></h2>
+                            </div>
+                        </div>
+
+                        <!-- Binary Details -->
+                        <div class="alert alert-secondary">
+                            <h5><i class="fa fa-binary"></i> Binary Data Details:</h5>
+                            <p><strong>Binary String:</strong></p>
+                            <pre id="binaryStringDisplay" style="word-wrap: break-word; white-space: pre-wrap; font-family: monospace; background-color: #e9ecef; padding: 10px; border-radius: 5px;"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var selectedImageFile = null;
+
+        $(document).ready(function () {
+            // Handle image file selection - automatically load image when selected
+            $('#imageInput').change(function (e) {
+                selectedImageFile = e.target.files[0];
+
+                if (selectedImageFile) {
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        // Update the target image with the selected image
+                        $('#targetImage').attr('src', event.target.result);
+                    };
+                    reader.readAsDataURL(selectedImageFile);
+                } else {
+                  
+                }
+            });
+
+            // Handle decode button
+            $('#decodeBtn').click(function () {
+                // Show loading state
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Detecting dots and decoding...');
+
+                // Hide previous results
+                $('#resultDiv').hide();
+                $('#decodeResults').hide();
+
+                // Prepare form data
+                var formData = new FormData();
+                if (selectedImageFile) {
+                    formData.append('imageFile', selectedImageFile);
+                }
+
+                // Make AJAX call to decode
+                $.ajax({
+                    url: '@Url.Action("DecodeWatermark", "decrypt")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        btn.prop('disabled', false).html('<i class="fa fa-unlock-alt"></i> Decode Message (Auto-Detect Dots)');
+
+                        if (response.success) {
+                            // Show success message
+                            $('#resultDiv')
+                                .removeClass('alert-danger')
+                                .addClass('alert-success')
+                                .html('<i class="fa fa-check-circle"></i> ' + response.message)
+                                .show();
+
+                            // Update dot detection info
+                            if (response.startDot && response.endDot) {
+                                $('#startDotDisplay').text(response.startDot);
+                                $('#endDotDisplay').text(response.endDot);
+                            }
+
+                            // Update decoded message and binary
+                            $('#decodedTextDisplay').text(response.decodedText);
+                            $('#binaryStringDisplay').text(response.binary);
+                            $('#decodeResults').fadeIn();
+
+                            // Console logs for debugging
+                            console.log('=======================================');
+                            console.log('Start Dot:', response.startDot);
+                            console.log('End Dot:', response.endDot);
+                            console.log('Decoded Text:', response.decodedText);
+                            console.log('Binary:', response.binary);
+                            console.log('=======================================');
+
+                        } else {
+                            // Show error message
+                            $('#resultDiv')
+                                .removeClass('alert-success')
+                                .addClass('alert-danger')
+                                .html('<i class="fa fa-exclamation-triangle"></i> ' + response.message)
+                                .show();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        btn.prop('disabled', false).html('<i class="fa fa-unlock-alt"></i> Decode Message (Auto-Detect Dots)');
+
+                        $('#resultDiv')
+                            .removeClass('alert-success')
+                            .addClass('alert-danger')
+                            .html('<i class="fa fa-times-circle"></i> Error connecting to server: ' + error)
+                            .show();
+                    }
+                });
+            });
+        });
+    </script>
+}

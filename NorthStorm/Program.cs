@@ -11,12 +11,15 @@ using NorthStorm.Repositories.Classifications;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<NorthStormContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("NorthStormContext") ?? throw new InvalidOperationException("Connection string 'NorthStormContext' not found."), o => o.UseCompatibilityLevel(120)));
+    options.UseSqlite(builder.Configuration.GetConnectionString("NorthStormContext") 
+    ?? throw new InvalidOperationException("Connection string 'NorthStormContext' not found.")));
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'NorthStormContext' not found.");
+// 2. Update ApplicationDbContext (Identity)
+var identityConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlite(identityConnectionString));
 
 // The AddDatabaseDeveloperPageExceptionFilter provides helpful error information in the development environment for EF migrations errors.
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
